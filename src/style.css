@@ -1,7 +1,29 @@
+* {
+  margin: 0;
+}
+html {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 nav {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: red;
 }
 
 .characters-container {
@@ -10,12 +32,15 @@ nav {
 }
 .characters-container-title {
   position: absolute;
-  top: -10px;
+  top: 0px;
+  font-weight: bold;
+  color: white;
 }
 .char-container {
   margin-top: 20px;
   width: 50px;
   height: 80px;
+  color: white;
 }
 .char-container:not(.char-container:first-of-type) {
   margin-left: -10px;
@@ -26,11 +51,30 @@ nav {
   width: 100%;
   border-radius: 50%;
   border: 1px solid black;
+  box-sizing: border-box;
 }
 .char-container p {
   padding-left: 10px;
   font-size: 12px;
   margin: 0;
+}
+.title {
+  color: white;
+  margin: 10px 0;
+  display: block;
+  width: 200px;
+  text-align: center;
+}
+.show-highscore-button {
+  background: red;
+  border: 2px solid white;
+  color: white;
+}
+.show-highscore-button:hover {
+  cursor: pointer;
+  background: white;
+  border: 2px solid white;
+  color: red;
 }
 
 .timer-container {
@@ -39,20 +83,57 @@ nav {
   align-items: center;
 }
 .timer {
+  width: 100px;
+  color: white;
   margin-right: 20px;
+  border: 2px solid white;
+  text-align: center;
+  padding: 10px 5px;
+  border-radius: 10px;
 }
 
 .stop-button {
   height: 40px;
-  border: none;
+  border: 2px solid white;
+  background: red;
+  color: white;
+  border-radius: 10px;
+}
+.stop-button:hover {
+  cursor: pointer;
+  background: white;
+  border: 2px solid white;
+  color: red;
 }
 
 .game-container {
-  width: 100vw;
-  height: 80vh;
+  /* width: 100vw; */
+
   border: 1px solid red;
   overflow: auto;
   position: relative;
+}
+.zoom-container {
+  position: relative;
+  width: 20vw;
+  margin: 20px auto;
+}
+.zoom-in-button,
+.zoom-out-button {
+  background-color: white;
+  color: red;
+  border: 3px solid red;
+  margin: 10px;
+  border-radius: 10px;
+}
+.zoom-in-button:hover,
+.zoom-out-button:hover {
+  cursor: pointer;
+  background-color: red;
+  color: white;
+  border: 3px solid red;
+  margin: 10px;
+  border-radius: 10px;
 }
 
 .game-image {
@@ -61,27 +142,151 @@ nav {
 
 /* highscore inpuit */
 .request-name {
-  position: absolute;
   top: 30%;
   left: 50%;
   transform: translateX(-50%);
-  border: 1px solid black;
-  background: black;
-  color: white;
-  padding: 20px;
+  position: absolute;
+  width: 350px;
+  height: 150px;
+  background: inherit;
+  border-radius: 2px;
+  overflow: hidden;
+  color: black;
+  border-radius: 10px;
+  border-top: 2px solid rgba(225, 225, 225, 0.3);
+  border-left: 2px solid rgba(225, 225, 225, 0.1);
+  border-right: 1px solid rgba(225, 225, 225, 0.2);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  box-shadow: inset 0 0 0 200px rgba(255, 255, 255, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
+.highscore-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .highscore-title {
   text-align: center;
+  color: black;
+}
+.form-group {
+  padding: 10px 10px;
+}
+.highscore-label {
+  background: white;
+  font-size: 18px;
+  border: 2px solid black;
 }
 
 .highscore-input {
+  outline: none;
+  font-size: 12px;
   border: none;
-  background: black;
-  color: white;
+  box-sizing: border-box;
+  padding: 0 10px;
 }
 
 .highscore-button {
-  background: black;
+  background: white;
+  color: black;
+  border: 3px solid black;
+}
+
+/* Highscore table */
+.highscore-container {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 50%;
+  overflow-y: scroll;
+
+  border-radius: 10px;
+  border-top: 2px solid rgba(225, 225, 225, 0.3);
+  border-left: 2px solid rgba(225, 225, 225, 0.1);
+  border-right: 1px solid rgba(225, 225, 225, 0.2);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  box-shadow: inset 0 0 0 200px rgba(255, 255, 255, 0.3);
+  border: 1px solid black;
+}
+
+.highscores {
+  border-radius: 10px;
+  padding: 40px;
+  font-weight: bold;
+}
+th {
+  position: sticky;
+  border-bottom: 3px solid black;
+}
+
+th,
+td {
+  padding: 2px 0;
+  margin: 0 15px;
+  text-align: right;
+}
+
+.close-highscores {
+  text-align: center;
+  line-height: 20px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  content: 'x';
+  width: 20px;
+  height: 20px;
+  color: red;
+  border-radius: 5px;
+  border: 2px solid red;
+}
+.close-highscores:hover {
+  background: red;
+  cursor: pointer;
   color: white;
-  border: 1px solid white;
+}
+
+/* //character selection menu when clicking */
+.character-hit-menu {
+  font-weight: bold;
+  padding: 5px 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  border-top: 2px solid rgba(225, 225, 225, 0.3);
+  border-left: 2px solid rgba(225, 225, 225, 0.1);
+  border-right: 1px solid rgba(225, 225, 225, 0.2);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  box-shadow: inset 0 0 0 200px rgba(255, 255, 255, 0.3);
+  border: 1px solid black;
+}
+
+/* .character-hit-menu:before {
+  content: '';
+
+  background: inherit;
+  position: absolute;
+  left: -25px;
+  right: 0;
+  top: -25px;
+  bottom: 0;
+  box-shadow: inset 0 0 0 200px rgba(255, 255, 255, 0.05);
+  filter: blur(10px);
+  border: 1px solid red;
+} */
+
+.character-hit-menu p {
+  margin: 0;
+  padding: 5px 0;
+}
+.character-hit-menu p:hover {
+  cursor: pointer;
+  color: red;
 }
