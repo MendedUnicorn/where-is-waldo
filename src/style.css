@@ -50,6 +50,38 @@ nav {
 .game-container {
   width: 100vw;
   height: 80vh;
+  border: 1px solid red;
   overflow: auto;
   position: relative;
+}
+
+.game-image {
+  position: relative;
+}
+
+/* highscore inpuit */
+.request-name {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid black;
+  background: black;
+  color: white;
+  padding: 20px;
+}
+.highscore-title {
+  text-align: center;
+}
+
+.highscore-input {
+  border: none;
+  background: black;
+  color: white;
+}
+
+.highscore-button {
+  background: black;
+  color: white;
+  border: 1px solid white;
 }

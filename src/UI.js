@@ -1,15 +1,34 @@
-import level1 from './gameLevels/level1.jpeg';
-import waldo from './waldo.png';
-import odlaw from './odlaw.png';
-import wizard from './wizard.png';
-import game from './game';
+import gameStarted from './index';
+import gameFactory from './game';
 
-const UI = (function createui() {
+let chars = [
+  {
+    name: 'Waldo',
+    //image: waldo,
+  },
+  {
+    name: 'Odlaw',
+    //image: odlaw,
+  },
+  {
+    name: 'Wizard',
+    // image: wizard,
+  },
+  {
+    name: 'Wilma',
+    // image: wilma,
+  },
+];
+
+function createui(width, height) {
   const body = document.querySelector('body');
   const container = document.querySelector('.container');
 
-  let imageWidth;
-  let imageHeight;
+  let imageWidth = width;
+  let imageHeight = height;
+
+  let choiceMenu = false;
+  let gameFinished = false;
 
   function clearScreen() {
     container.innerHTML = '';
@@ -35,6 +54,7 @@ const UI = (function createui() {
       img.classList.add('char-img');
       img.src = char.image;
       img.alt = char.name;
+      img.id = char.name.toLowerCase();
 
       name.classList.add('char-name');
       name.innerText = char.name;
@@ -69,34 +89,51 @@ const UI = (function createui() {
     body.appendChild(navbar);
   }
 
-  async function createGameImage(img) {
+  async function createGameImage(img, gameFac, stopTime, calculateTime) {
     const container = document.createElement('div');
     container.classList.add('game-container');
-
+    console.log({ gameFac });
     const image = new Image();
+
+    image.src = img;
+    await image.decode();
+    image.width = width;
+    image.height = height;
+    console.dir(image);
+
+    console.log('inside image', imageWidth);
+    console.log('inside image', image.width);
     image.classList.add('game-image');
     image.alt = 'game board image where is waldo';
-    image.style.width = '100%';
-    image.src = img;
 
-    console.log(image.height);
     container.appendChild(image);
-    imageHeight = image.height;
-    imageWidth = image.width;
-    console.log('make image', imageWidth);
-    levels[0].forEach((char) => {
-      UI.markCharacter(
-        char.position.x,
-        char.position.y,
-        imageWidth,
-        imageHeight
-      );
+
+    // Listen to windows size change
+    window.addEventListener('resize', () => {
+      imageHeight = image.height;
+      imageWidth = image.width;
+      console.log({ imageWidth, imageHeight });
     });
 
-    image.addEventListener('click', (e) =>
-      game.clickImage(e, imageWidth, imageHeight)
-    );
     body.appendChild(container);
+    image.addEventListener('click', (e) => {
+      console.log(e);
+      let x = e.offsetX;
+      let y = e.offsetY;
+      console.log(e.offsetX, e.offsetY);
+      let hitChar = gameFac.isHit(x, y, imageWidth, imageHeight);
+      console.log('hitchar', hitChar);
+      //gameFac.markToCheckPositions(x, y, imageWidth, imageHeight);
+      createHitChoiceMenu(
+        e.x,
+        e.y,
+        chars,
+        hitChar,
+        gameFac,
+        stopTime,
+        calculateTime
+      );
+    });
   }
 
   function zoomInFunction() {
@@ -107,16 +144,8 @@ const UI = (function createui() {
     image.style.width = currWidth + 40 + 'px';
     imageHeight = image.height;
     imageWidth = image.width;
-    document.querySelectorAll('.marker').forEach((el) => el.remove());
 
-    levels[0].forEach((char) => {
-      UI.markCharacter(
-        char.position.x,
-        char.position.y,
-        imageWidth,
-        imageHeight
-      );
-    });
+    console.log({ imageWidth, imageHeight });
   }
   function zoomOutFunction() {
     const image = document.querySelector('.game-image');
@@ -126,16 +155,8 @@ const UI = (function createui() {
     image.style.width = currWidth - 40 + 'px';
     imageHeight = image.height;
     imageWidth = image.width;
-    document.querySelectorAll('.marker').forEach((el) => el.remove());
 
-    levels[0].forEach((char) => {
-      UI.markCharacter(
-        char.position.x,
-        char.position.y,
-        imageWidth,
-        imageHeight
-      );
-    });
+    console.log({ imageWidth, imageHeight });
   }
 
   function createZoomButtons() {
@@ -156,83 +177,110 @@ const UI = (function createui() {
     body.appendChild(container);
   }
 
-  function markArea() {}
+  function createHitChoiceMenu(
+    x,
+    y,
+    chars,
+    hitChar,
+    gameFac,
+    stopTimeFunc,
+    calcTimeFunc
+  ) {
+    if (!choiceMenu) {
+      choiceMenu = true;
+      let menu = document.createElement('div');
+      menu.classList.add('character-hit-menu');
 
-  function markCharacter(x, y, w, h) {
-    const image = document.querySelector('.game-image');
-    const container = document.querySelector('.game-container');
-
-    const square = document.createElement('div');
-    square.classList.add('marker');
-    let styles = {
-      border: '5px solid green',
-      position: 'absolute',
-      left: x * w + 'px',
-      // left: '440px',
-      top: y * h + 'px',
-      height: (h / 1000) * 50 + 'px',
-      width: (w / 1000) * 25 + 'px',
-    };
-    Object.assign(square.style, styles);
-
-    //container.append(square);
+      chars.forEach((char) => {
+        let charName = document.createElement('p');
+        charName.innerText = char.name;
+        charName.addEventListener('click', async () => {
+          if (hitChar == char.name.toLowerCase()) {
+            console.log('correct');
+            markFound(char.name.toLowerCase());
+            gameFac.markFound(char.name.toLowerCase());
+            if (gameFac.checkIfAllFound()) {
+              await stopTimeFunc();
+              const time = Math.round((await calcTimeFunc()) * 100) / 100;
+              requestUserName(time);
+            }
+            document.querySelector('.character-hit-menu').remove();
+            choiceMenu = false;
+          } else {
+            console.log('wrong');
+            document.querySelector('.character-hit-menu').remove();
+            choiceMenu = false;
+          }
+        });
+        menu.appendChild(charName);
+      });
+      body.appendChild(menu);
+      menu.style.position = 'absolute';
+      menu.style.top = y + 'px';
+      menu.style.left = x + 'px';
+      menu.style.border = '2px solid red';
+      menu.style.background = 'black';
+      menu.style.color = 'white';
+    } else {
+      document.querySelector('.character-hit-menu').remove();
+      choiceMenu = false;
+    }
   }
+  function markFound(name) {
+    const img = document.querySelector('#' + name);
+    img.style.filter = 'grayscale(100%)';
+  }
+  function setGameFinished() {
+    gameFinished = true;
+  }
+  function requestUserName(time) {
+    const container = document.createElement('div');
+    const title = document.createElement('h2');
+    const form = document.createElement('form');
+    const label = document.createElement('label');
+    const inputHighScore = document.createElement('input');
+    const inputHighScoreBtn = document.createElement('button');
 
-  function setCharacterPosition() {}
+    container.classList.add('request-name');
+    title.classList.add('highscore-title');
+    form.classList.add('highscore-form');
+    label.classList.add('highscore-label');
+    inputHighScore.classList.add('highscore-input');
+    inputHighScoreBtn.classList.add('highscore-button');
+
+    title.innerText = 'Your time was: ' + time + ' s';
+    label.for = 'highscore-input';
+    label.innerText = 'Name';
+    inputHighScore.id = 'highscore-input';
+    inputHighScore.type = 'text';
+    inputHighScore.setAttribute('required', null);
+    inputHighScore.setAttribute('placeholder', 'Enter your name...');
+    inputHighScoreBtn.innerText = 'Submit';
+
+    label.appendChild(inputHighScore);
+    form.append(label, inputHighScoreBtn);
+    container.append(title, form);
+    body.appendChild(container);
+
+    inputHighScoreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const name = e.target.form.querySelector('.highscore-input').value;
+      console.log(name);
+      gameStarted.addUserName(name);
+    });
+  }
 
   return {
     clearScreen,
     createNavbar,
     createGameImage,
     createZoomButtons,
-    markCharacter,
     imageHeight,
     imageWidth,
   };
-})();
+}
 
-export default UI;
-
-let chars = [
-  {
-    name: 'Waldo',
-    image: waldo,
-  },
-  {
-    name: 'Odlaw',
-    image: odlaw,
-  },
-  {
-    name: 'Wizard',
-    image: wizard,
-  },
-];
-let levels = [
-  [
-    { name: 'Waldo', position: { x: 0.4177, y: 0.74199 } },
-
-    { name: 'Odlaw', position: { x: 0.5277, y: 0.84199 } },
-  ],
-  [
-    { name: 'Waldo', position: { x: 0.4277, y: 0.74199 } },
-
-    { name: 'Odlaw', position: { x: 0.5277, y: 0.84199 } },
-  ],
-];
-window.addEventListener('resize', (e) => {
-  const image = document.querySelector('.game-image');
-  let imageWidth = image.width;
-  let imageHeight = image.height;
-  document.querySelectorAll('.marker').forEach((div) => div.remove());
-  console.log('width', imageWidth, 'height', imageHeight);
-  levels[0].forEach((char) => {
-    UI.markCharacter(char.position.x, char.position.y, imageWidth, imageHeight);
-  });
-});
-UI.clearScreen();
-UI.createNavbar(chars);
-UI.createGameImage(level1);
-UI.createZoomButtons();
+export default createui;
 
 // levels[0].forEach((char) => {
 //   console.log(char.position.x);
